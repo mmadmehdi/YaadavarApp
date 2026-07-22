@@ -1,0 +1,8 @@
+{
+  "expo": {
+    "plugins": [
+      "./plugins/withQuickTile",
+      "./plugins/withDeviceOwnerLock"
+    ]
+  }
+}

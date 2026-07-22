@@ -8,7 +8,8 @@
     "userInterfaceStyle": "dark",
     "scheme": "yaadapp",
     "plugins": [
-      "./plugins/withQuickTile"
+      "./plugins/withQuickTile",
+      "./plugins/withDeviceOwnerLock"
     ],
     "android": {
       "package": "com.mmadmehdi.yaadavar",

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    سیاست‌های ادمین که این اپ ممکنه استفاده کنه.
+    برای Lock Task Mode نیازی به سیاست خاصی (مثل قفل رمز) نیست،
+    ولی تگ policies برای معتبر بودن فایل الزامیه.
+-->
+<device-admin xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-policies>
+        <limit-password />
+    </uses-policies>
+</device-admin>

@@ -2,12 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
   StyleSheet, Platform, Alert, Vibration, Animated,
-  Modal, Dimensions, AppState, StatusBar, Linking
+  Modal, Dimensions, AppState, StatusBar, Linking,
+  NativeModules
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+
+const { LockTaskModule } = NativeModules;
 
 const { width, height } = Dimensions.get('window');
 
@@ -139,6 +142,11 @@ export default function App() {
       createStickyNotification();
     }, 2000);
 
+    // ثبت پکیج برای Lock Task
+    if (Platform.OS === 'android' && LockTaskModule) {
+      LockTaskModule.enableLockTaskPackage().catch(() => {});
+    }
+
     const subscription = AppState.addEventListener('change', (nextAppState) => {
       if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
         ensureNotificationExists();
@@ -178,11 +186,24 @@ export default function App() {
     Animated.spring(popupFade, { toValue: 1, friction: 7, useNativeDriver: true }).start();
     Vibration.vibrate(200);
 
+    // قفل کردن صفحه هنگام باز شدن پاپ‌آپ
+    if (Platform.OS === 'android' && LockTaskModule) {
+      LockTaskModule.startLockTask().catch((e) =>
+        addLog('خطا در قفل صفحه: ' + e.message)
+      );
+    }
+
     clearInterval(cdInterval.current);
     cdInterval.current = setInterval(() => {
       setSecsLeft(p => {
         if (p <= 1) {
           clearInterval(cdInterval.current);
+          
+          // باز کردن قفل بعد از اتمام ۱۰ ثانیه
+          if (Platform.OS === 'android' && LockTaskModule) {
+            LockTaskModule.stopLockTask().catch(() => {});
+          }
+
           return 0;
         }
         return p - 1;
@@ -192,6 +213,9 @@ export default function App() {
 
   function closePopup() {
     if (secsLeft > 0) return; // جلوگیری از خروج قبل از اتمام ۱۰ ثانیه
+    if (Platform.OS === 'android' && LockTaskModule) {
+      LockTaskModule.stopLockTask().catch(() => {});
+    }
     clearInterval(cdInterval.current);
     Animated.timing(popupFade, { toValue: 0, duration: 400, useNativeDriver: true }).start(() => setShowPopup(false));
   }
