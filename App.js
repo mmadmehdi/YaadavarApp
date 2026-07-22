@@ -53,6 +53,8 @@ export default function App() {
   const [isRunning, setIsRunning]     = useState(false);
   const [selInterval, setSelInterval] = useState(INTERVALS[2]);
   const [customMinutes, setCustomMinutes] = useState('');
+  const [lockSeconds, setLockSeconds] = useState(10);
+  const [lockSecondsInput, setLockSecondsInput] = useState('');
   const [status, setStatus]           = useState('غیرفعال');
   const [nextTime, setNextTime]       = useState('');
   const [logs, setLogs]               = useState([]);
@@ -192,7 +194,7 @@ export default function App() {
     if (Platform.OS === 'android' && LockTaskModule) { LockTaskModule.startLockTask().catch(() => {}); }
     setPalIdx(Math.floor(Math.random() * PALETTES.length));
     setPopupText(sentence);
-    setSecsLeft(10);
+    setSecsLeft(lockSeconds);
     popupFade.setValue(0);
     setShowPopup(true);
     Animated.spring(popupFade, { toValue: 1, friction: 7, useNativeDriver: true }).start();
@@ -413,7 +415,7 @@ export default function App() {
             {secsLeft > 0 ? (
               <View style={styles.lockBadge}>
                 <Ionicons name="lock-closed" size={16} color="#FFE0B5" style={{ marginLeft: 6 }} />
-                <Text style={styles.lockText}>لطفاً ۱۰ ثانیه صبور باشید...</Text>
+                <Text style={styles.lockText}>{'لطفاً ' + lockSeconds + ' ثانیه صبور باشید...'}</Text>
               </View>
             ) : (
               <TouchableOpacity style={styles.closeBtn} onPress={closePopup} activeOpacity={0.8}>
@@ -487,6 +489,32 @@ export default function App() {
                   return;
                 }
                 setSelInterval({ label: mins + ' دقیقه (دلخواه)', value: mins * 60 });
+              }}>
+              <Text style={styles.customBtnText}>تنظیم</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.label}>🔒 مدت قفل پاپ‌آپ (به ثانیه)</Text>
+          <View style={styles.customRow}>
+            <TextInput
+              style={styles.customInput}
+              keyboardType="numeric"
+              value={lockSecondsInput}
+              onChangeText={setLockSecondsInput}
+              placeholder={'پیش‌فرض: ' + lockSeconds}
+              placeholderTextColor="#aaa"
+              textAlign="right"
+            />
+            <TouchableOpacity
+              style={styles.customBtn}
+              onPress={() => {
+                const secs = parseInt(lockSecondsInput, 10);
+                if (!secs || secs <= 0) {
+                  Alert.alert('خطا', 'یه عدد صحیح و مثبت برای ثانیه وارد کن');
+                  return;
+                }
+                setLockSeconds(secs);
+                Alert.alert('انجام شد', 'پاپ‌آپ از این به بعد ' + secs + ' ثانیه قفل می‌مونه');
               }}>
               <Text style={styles.customBtnText}>تنظیم</Text>
             </TouchableOpacity>
