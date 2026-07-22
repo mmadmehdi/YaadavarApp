@@ -31,20 +31,12 @@ jobs:
       - name: Prebuild Native Android Project
         run: npx expo prebuild --platform android
 
-      - name: Auto Generate Release Keystore
-        run: |
-          keytool -genkey -v -keystore android/app/release.jks \
-            -alias yaadavar_key \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass yaadavar123 -keypass yaadavar123 \
-            -dname "CN=Yaadavar, OU=App, O=Dev, L=City, S=State, C=US"
-
       - name: Build Signed Android APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleRelease \
-            -Pandroid.injected.signing.store.file=$(pwd)/app/release.jks \
+            -Pandroid.injected.signing.store.file=$(pwd)/../release.jks \
             -Pandroid.injected.signing.store.password=yaadavar123 \
             -Pandroid.injected.signing.key.alias=yaadavar_key \
             -Pandroid.injected.signing.key.password=yaadavar123
@@ -54,3 +46,4 @@ jobs:
         with:
           name: YaadavarApp-Signed-APK
           path: android/app/build/outputs/apk/release/*.apk
+
