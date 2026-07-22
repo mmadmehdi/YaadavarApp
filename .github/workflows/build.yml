@@ -31,9 +31,13 @@ jobs:
       - name: Prebuild Native Android Project
         run: npx expo prebuild --platform android
 
-      - name: Decode Android Keystore
+      - name: Auto Generate Release Keystore
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.jks
+          keytool -genkey -v -keystore android/app/release.jks \
+            -alias yaadavar_key \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass yaadavar123 -keypass yaadavar123 \
+            -dname "CN=Yaadavar, OU=App, O=Dev, L=City, S=State, C=US"
 
       - name: Build Signed Android APK
         run: |
@@ -41,9 +45,9 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease \
             -Pandroid.injected.signing.store.file=$(pwd)/app/release.jks \
-            -Pandroid.injected.signing.store.password=${{ secrets.ANDROID_KEYSTORE_PASSWORD }} \
-            -Pandroid.injected.signing.key.alias=${{ secrets.ANDROID_KEY_ALIAS }} \
-            -Pandroid.injected.signing.key.password=${{ secrets.ANDROID_KEY_PASSWORD }}
+            -Pandroid.injected.signing.store.password=yaadavar123 \
+            -Pandroid.injected.signing.key.alias=yaadavar_key \
+            -Pandroid.injected.signing.key.password=yaadavar123
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
