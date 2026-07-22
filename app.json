@@ -1,24 +1,22 @@
 {
   "expo": {
-    "name": "YaadavarAppFresh",
-    "slug": "YaadavarAppFresh",
+    "name": "یادآور جملات",
+    "slug": "yaadavar-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "ios": {
-      "supportsTablet": true
-    },
+    "userInterfaceStyle": "dark",
+    "scheme": "yaadapp",
+    "plugins": [
+      "./plugins/withQuickTile"
+    ],
     "android": {
+      "package": "com.mmadmehdi.yaadavar",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#667EEA"
       }
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
     }
   }
 }
+
