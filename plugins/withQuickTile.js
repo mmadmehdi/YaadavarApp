@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 module.exports = function withQuickTile(config) {
-  // ۱. افزودن سرویس Tile به AndroidManifest.xml
+  // ۱. افزودن سرویس Tile به AndroidManifest.xml با آیکون معتبر
   config = withAndroidManifest(config, (config) => {
     const mainApplication = config.modResults.manifest.application[0];
     mainApplication['service'] = mainApplication['service'] || [];
@@ -11,7 +11,7 @@ module.exports = function withQuickTile(config) {
       '$': {
         'android:name': '.QuickTileService',
         'android:label': 'جمله فوری',
-        'android:icon': '@drawable/ic_notification',
+        'android:icon': '@mipmap/ic_launcher',
         'android:permission': 'android.permission.BIND_QUICK_SETTINGS_TILE',
         'android:exported': 'true',
       },
@@ -67,3 +67,4 @@ class QuickTileService : TileService() {
 
   return config;
 };
+
