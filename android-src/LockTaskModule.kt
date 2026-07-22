@@ -50,7 +50,7 @@ class LockTaskModule(reactContext: ReactApplicationContext) :
     @ReactMethod
     fun startLockTask(promise: Promise) {
         try {
-            val activity: Activity? = currentActivity
+            val activity: Activity? = reactApplicationContext.currentActivity
             if (activity == null) {
                 promise.reject("ERR_NO_ACTIVITY", "اکتیویتی فعالی پیدا نشد")
                 return
@@ -65,7 +65,7 @@ class LockTaskModule(reactContext: ReactApplicationContext) :
     @ReactMethod
     fun stopLockTask(promise: Promise) {
         try {
-            val activity: Activity? = currentActivity
+            val activity: Activity? = reactApplicationContext.currentActivity
             if (activity == null) {
                 promise.reject("ERR_NO_ACTIVITY", "اکتیویتی فعالی پیدا نشد")
                 return
