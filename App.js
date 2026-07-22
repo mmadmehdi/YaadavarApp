@@ -10,7 +10,7 @@ import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 
-const { LockTaskModule } = NativeModules;
+const { LockTaskModule, StickyServiceModule } = NativeModules;
 
 const { width, height } = Dimensions.get('window');
 
@@ -142,7 +142,10 @@ export default function App() {
     configureChannel();
     checkActive();
     setTimeout(() => {
-      createStickyNotification();
+      Notifications.dismissNotificationAsync(STICKY_NOTIF_ID).catch(() => {});
+      if (Platform.OS === 'android' && StickyServiceModule) {
+        StickyServiceModule.startStickyService().catch(() => {});
+      }
     }, 2000);
 
     // ثبت پکیج برای Lock Task
@@ -152,13 +155,13 @@ export default function App() {
 
     const subscription = AppState.addEventListener('change', (nextAppState) => {
       if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
-        ensureNotificationExists();
+        if (Platform.OS === 'android' && StickyServiceModule) { StickyServiceModule.startStickyService().catch(() => {}); }
       }
       appState.current = nextAppState;
     });
 
     const stickyWatcher = setInterval(() => {
-      ensureNotificationExists();
+      if (Platform.OS === 'android' && StickyServiceModule) { StickyServiceModule.startStickyService().catch(() => {}); }
     }, 60000);
 
     return () => {

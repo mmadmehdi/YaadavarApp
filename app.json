@@ -9,7 +9,8 @@
     "scheme": "yaadapp",
     "plugins": [
       "./plugins/withQuickTile",
-      "./plugins/withDeviceOwnerLock"
+      "./plugins/withDeviceOwnerLock",
+      "./plugins/withForegroundService"
     ],
     "android": {
       "package": "com.mmadmehdi.yaadavar",
