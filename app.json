@@ -4,18 +4,13 @@
     "slug": "yaadavar-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "scheme": "yaadapp",
     "plugins": [
       "./plugins/withQuickTile"
     ],
     "android": {
-      "package": "com.mmadmehdi.yaadavar",
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#667EEA"
-      }
+      "package": "com.mmadmehdi.yaadavar"
     }
   }
 }
