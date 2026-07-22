@@ -61,7 +61,6 @@ export default function App() {
   const [popupText, setPopupText]     = useState('');
   const [palIdx, setPalIdx]           = useState(0);
   const popupFade                     = useRef(new Animated.Value(0)).current;
-  const closeTimer                    = useRef(null);
   const cdInterval                    = useRef(null);
   const [secsLeft, setSecsLeft]       = useState(10);
 
@@ -76,7 +75,7 @@ export default function App() {
     setTimeout(() => setShowSplash(false), 4000);
   }, []);
 
-  // هندل کردن باز شدن برنامه از طریق دکمه بالا گوشی (Quick Settings Tile)
+  // هندل کردن Deep Link از دکمه پنل بالای گوشی
   useEffect(() => {
     const handleDeepLink = (event) => {
       if (event.url && event.url.includes('popup')) {
@@ -100,7 +99,7 @@ export default function App() {
       if (list && list.length > 0) {
         const r = list[Math.floor(Math.random() * list.length)];
         openPopup(r);
-        addLog('از دکمه بالایی گوشی: ' + r.substring(0, 25) + '...');
+        addLog('از دکمه بالای گوشی: ' + r.substring(0, 25) + '...');
         refreshLogs();
       }
     });
@@ -149,7 +148,6 @@ export default function App() {
 
     return () => {
       subscription.remove();
-      clearTimeout(closeTimer.current);
       clearInterval(cdInterval.current);
     };
   }, []);
@@ -179,19 +177,21 @@ export default function App() {
     setShowPopup(true);
     Animated.spring(popupFade, { toValue: 1, friction: 7, useNativeDriver: true }).start();
     Vibration.vibrate(200);
+
     clearInterval(cdInterval.current);
     cdInterval.current = setInterval(() => {
       setSecsLeft(p => {
-        if (p <= 1) { clearInterval(cdInterval.current); return 0; }
+        if (p <= 1) {
+          clearInterval(cdInterval.current);
+          return 0;
+        }
         return p - 1;
       });
     }, 1000);
-    clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(closePopup, 10000);
   }
 
   function closePopup() {
-    clearTimeout(closeTimer.current);
+    if (secsLeft > 0) return; // جلوگیری از خروج قبل از اتمام ۱۰ ثانیه
     clearInterval(cdInterval.current);
     Animated.timing(popupFade, { toValue: 0, duration: 400, useNativeDriver: true }).start(() => setShowPopup(false));
   }
@@ -353,17 +353,36 @@ export default function App() {
   return (
     <>
       <StatusBar barStyle="dark-content" />
-      <Modal visible={showPopup} transparent animationType="none" statusBarTranslucent onRequestClose={closePopup}>
+      <Modal
+        visible={showPopup}
+        transparent
+        animationType="none"
+        statusBarTranslucent
+        onRequestClose={() => {
+          if (secsLeft === 0) closePopup();
+        }}
+      >
         <LinearGradient colors={pal} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.overlay}>
           <Animated.View style={[styles.popupBox, { opacity: popupFade, transform: [{ scale: popupFade }] }]}>
-            <View style={styles.cdBadge}><Text style={styles.cdText}>{secsLeft}</Text></View>
+            <View style={styles.cdBadge}>
+              <Text style={styles.cdText}>{secsLeft > 0 ? secsLeft : '✓'}</Text>
+            </View>
             <View style={styles.line} />
             <Text style={styles.popupSentence}>{popupText}</Text>
             <View style={styles.line} />
             <Text style={styles.popupHint}>✨ فقط یک قدم جلوتر برو ✨</Text>
-            <TouchableOpacity style={styles.closeBtn} onPress={closePopup}>
-              <Text style={styles.closeBtnText}>بستن ✕</Text>
-            </TouchableOpacity>
+
+            {/* شرط نمایش دکمه بستن فقط پس از اتمام ۱۰ ثانیه */}
+            {secsLeft > 0 ? (
+              <View style={styles.lockBadge}>
+                <Ionicons name="lock-closed" size={16} color="#FFE0B5" style={{ marginLeft: 6 }} />
+                <Text style={styles.lockText}>لطفاً ۱۰ ثانیه صبور باشید...</Text>
+              </View>
+            ) : (
+              <TouchableOpacity style={styles.closeBtn} onPress={closePopup} activeOpacity={0.8}>
+                <Text style={styles.closeBtnText}>بستن ✕</Text>
+              </TouchableOpacity>
+            )}
           </Animated.View>
         </LinearGradient>
       </Modal>
@@ -456,6 +475,8 @@ const styles = StyleSheet.create({
   popupHint: { color: '#FFE0B5', fontSize: 16, marginTop: 10, marginBottom: 30, fontStyle: 'italic' },
   closeBtn: { backgroundColor: '#fff', paddingHorizontal: 35, paddingVertical: 12, borderRadius: 40, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 },
   closeBtnText: { color: '#764BA2', fontSize: 16, fontWeight: 'bold' },
+  lockBadge: { flexDirection: 'row-reverse', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 30 },
+  lockText: { color: '#FFE0B5', fontSize: 14, fontWeight: '600' },
 
   container: { flexGrow: 1, backgroundColor: '#F0F4F8', paddingBottom: 30 },
   headerGradient: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: Platform.OS === 'ios' ? 60 : 40, paddingBottom: 20, borderBottomLeftRadius: 30, borderBottomRightRadius: 30, elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 5 },
