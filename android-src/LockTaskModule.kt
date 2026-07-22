@@ -1,89 +1,51 @@
-package __PACKAGE_NAME__
+package com.mmadmehdi.yaadavar
 
-import android.app.Activity
-import android.app.admin.DevicePolicyManager
-import android.content.ComponentName
+import android.app.ActivityManager
 import android.content.Context
-import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.bridge.Promise
 
-/**
- * ماژول نیتیوی که استارت/استاپ Lock Task Mode (کیوسک) رو از JS در دسترس می‌ذاره.
- *
- * پیش‌نیاز: اپ باید Device Owner باشه (یه بار با ADB تنظیم می‌شه، توضیحش رو
- * توی README گذاشتم). اگه Device Owner نباشه، startLockTask بازم کار می‌کنه
- * ولی یه دیالوگ تایید به کاربر نشون می‌ده و با Back+Recent قابل خروجه —
- * که دقیقاً چیزی نیست که می‌خوای.
- */
-class LockTaskModule(reactContext: ReactApplicationContext) :
-    ReactContextBaseJavaModule(reactContext) {
-
+class LockTaskModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
     override fun getName() = "LockTaskModule"
-
-    private fun getDpm(): DevicePolicyManager {
-        return reactApplicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE)
-                as DevicePolicyManager
-    }
-
-    private fun getAdminComponent(): ComponentName {
-        return ComponentName(reactApplicationContext, MyDeviceAdminReceiver::class.java)
-    }
-
-    /** بررسی اینکه آیا اپ الان Device Owner هست یا نه (برای دیباگ مفیده) */
-    @ReactMethod
-    fun isDeviceOwner(promise: Promise) {
-        try {
-            val dpm = getDpm()
-            promise.resolve(dpm.isDeviceOwnerApp(reactApplicationContext.packageName))
-        } catch (e: Exception) {
-            promise.reject("ERR_CHECK_OWNER", e)
-        }
-    }
-
-    /** اگه Device Owner باشیم، این پکیج رو به لیست سفید Lock Task اضافه می‌کنه. */
-    @ReactMethod
-    fun enableLockTaskPackage(promise: Promise) {
-        try {
-            val dpm = getDpm()
-            val admin = getAdminComponent()
-            if (dpm.isDeviceOwnerApp(reactApplicationContext.packageName)) {
-                dpm.setLockTaskPackages(admin, arrayOf(reactApplicationContext.packageName))
-            }
-            promise.resolve(true)
-        } catch (e: Exception) {
-            promise.reject("ERR_ENABLE_LOCK_PKG", e)
-        }
-    }
 
     @ReactMethod
     fun startLockTask(promise: Promise) {
         try {
-            val activity: Activity? = currentActivity
-            if (activity == null) {
-                promise.reject("ERR_NO_ACTIVITY", "اکتیویتی فعالی پیدا نشد")
-                return
-            }
-            activity.startLockTask()
-            promise.resolve(true)
+            val activity = currentActivity
+            activity?.let {
+                it.runOnUiThread {
+                    it.startLockTask()
+                    promise.resolve(true)
+                }
+            } ?: promise.reject("ERROR", "Activity is null")
         } catch (e: Exception) {
-            promise.reject("ERR_START_LOCK", e)
+            promise.reject("ERROR", e.message)
         }
     }
 
     @ReactMethod
     fun stopLockTask(promise: Promise) {
         try {
-            val activity: Activity? = currentActivity
-            if (activity == null) {
-                promise.reject("ERR_NO_ACTIVITY", "اکتیویتی فعالی پیدا نشد")
-                return
-            }
-            activity.stopLockTask()
+            val activity = currentActivity
+            activity?.let {
+                it.runOnUiThread {
+                    it.stopLockTask()
+                    promise.resolve(true)
+                }
+            } ?: promise.reject("ERROR", "Activity is null")
+        } catch (e: Exception) {
+            promise.reject("ERROR", e.message)
+        }
+    }
+
+    @ReactMethod
+    fun enableLockTaskPackage(promise: Promise) {
+        try {
             promise.resolve(true)
         } catch (e: Exception) {
-            promise.reject("ERR_STOP_LOCK", e)
+            promise.reject("ERROR", e.message)
         }
     }
 }

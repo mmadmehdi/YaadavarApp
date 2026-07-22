@@ -1,4 +1,4 @@
-package __PACKAGE_NAME__
+package com.mmadmehdi.yaadavar
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule
@@ -6,15 +6,11 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.uimanager.ViewManager
 
 class LockTaskPackage : ReactPackage {
-    override fun createNativeModules(
-        reactContext: ReactApplicationContext
-    ): List<NativeModule> {
+    override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
         return listOf(LockTaskModule(reactContext))
     }
 
-    override fun createViewManagers(
-        reactContext: ReactApplicationContext
-    ): List<ViewManager<*, *>> {
+    override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
         return emptyList()
     }
 }
