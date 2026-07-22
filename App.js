@@ -52,6 +52,7 @@ export default function App() {
   const [sentences, setSentences]     = useState([]);
   const [isRunning, setIsRunning]     = useState(false);
   const [selInterval, setSelInterval] = useState(INTERVALS[2]);
+  const [customMinutes, setCustomMinutes] = useState('');
   const [status, setStatus]           = useState('غیرفعال');
   const [nextTime, setNextTime]       = useState('');
   const [logs, setLogs]               = useState([]);
@@ -118,10 +119,12 @@ export default function App() {
         body: 'برای نمایش جمله فوری کلیک کنید',
         sound: false,
         priority: Notifications.AndroidNotificationPriority.MAX,
+        autoDismiss: false,
         android: {
           channelId: 'urgent_channel',
           sticky: true,
           ongoing: true,
+          autoCancel: false,
         },
       },
       trigger: null,
@@ -154,9 +157,14 @@ export default function App() {
       appState.current = nextAppState;
     });
 
+    const stickyWatcher = setInterval(() => {
+      ensureNotificationExists();
+    }, 60000);
+
     return () => {
       subscription.remove();
       clearInterval(cdInterval.current);
+      clearInterval(stickyWatcher);
     };
   }, []);
 
@@ -456,6 +464,31 @@ export default function App() {
             ))}
           </View>
 
+          <Text style={styles.label}>🔧 یا فاصله دلخواه (به دقیقه)</Text>
+          <View style={styles.customRow}>
+            <TextInput
+              style={styles.customInput}
+              keyboardType="numeric"
+              value={customMinutes}
+              onChangeText={setCustomMinutes}
+              placeholder="مثلاً 7"
+              placeholderTextColor="#aaa"
+              textAlign="right"
+            />
+            <TouchableOpacity
+              style={styles.customBtn}
+              onPress={() => {
+                const mins = parseInt(customMinutes, 10);
+                if (!mins || mins <= 0) {
+                  Alert.alert('خطا', 'یه عدد صحیح و مثبت برای دقیقه وارد کن');
+                  return;
+                }
+                setSelInterval({ label: mins + ' دقیقه (دلخواه)', value: mins * 60 });
+              }}>
+              <Text style={styles.customBtnText}>تنظیم</Text>
+            </TouchableOpacity>
+          </View>
+
           <TouchableOpacity style={styles.btnPurple} onPress={quickReminder}>
             <Ionicons name="git-compare" size={22} color="#fff" style={{ marginRight: 8 }} />
             <Text style={styles.btnTxt}>جمله فوری</Text>
@@ -525,6 +558,10 @@ const styles = StyleSheet.create({
   pillOn: { backgroundColor: '#6366F1' },
   pillTxt: { fontSize: 13, fontWeight: '500', color: '#334155' },
   pillTxtOn: { color: '#fff' },
+  customRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 24 },
+  customInput: { flex: 1, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 20, padding: 12, fontSize: 15, color: '#0F172A' },
+  customBtn: { backgroundColor: '#0EA5E9', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 12 },
+  customBtnText: { color: '#fff', fontSize: 13, fontWeight: '700' },
 
   btnPurple: { backgroundColor: '#8B5CF6', borderRadius: 40, paddingVertical: 14, alignItems: 'center', marginBottom: 12, flexDirection: 'row', justifyContent: 'center', gap: 8, shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.3, shadowRadius: 5, elevation: 4 },
   btnRed: { backgroundColor: '#EF4444', borderRadius: 40, paddingVertical: 14, alignItems: 'center', marginBottom: 12, flexDirection: 'row', justifyContent: 'center', gap: 8, shadowColor: '#EF4444', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.3, shadowRadius: 5, elevation: 4 },
