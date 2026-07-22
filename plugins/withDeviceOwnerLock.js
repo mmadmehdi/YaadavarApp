@@ -5,20 +5,7 @@ const {
 const fs = require('fs');
 const path = require('path');
 
-/**
- * پلاگین ری‌اکت نیتیو / اکسپو برای فعال‌سازی Device Admin + Lock Task Mode
- * -----------------------------------------------------------------------
- * این پلاگین سه کار انجام می‌ده:
- *  ۱. یه <receiver> برای DeviceAdminReceiver به AndroidManifest.xml اضافه می‌کنه
- *  ۲. فایل res/xml/device_admin_receiver.xml (سیاست‌های ادمین) رو کپی می‌کنه
- *  ۳. فایل‌های کاتلین (DeviceAdminReceiver + LockTaskModule + Package) رو
- *     توی android/app/src/main/java/<package>/ کپی می‌کنه
- *
- * نکته: applicationId رو از config.android.package می‌خونه، پس نیازی نیست
- * دستی جایی بنویسیش — فقط app.json باید درست تنظیم شده باشه.
- */
 function withDeviceOwnerLock(config) {
-  // ۱) اضافه کردن receiver به AndroidManifest.xml
   config = withAndroidManifest(config, (config) => {
     const androidManifest = config.modResults;
     const application = androidManifest.manifest.application[0];
@@ -58,7 +45,6 @@ function withDeviceOwnerLock(config) {
     return config;
   });
 
-  // ۲) کپی فایل‌های کاتلین + xml به مسیر native
   config = withDangerousMod(config, [
     'android',
     async (config) => {
@@ -82,7 +68,6 @@ function withDeviceOwnerLock(config) {
       const replacePackage = (content) =>
         content.replace(/__PACKAGE_NAME__/g, packageName);
 
-      // کپی و جایگزینی پکیج در فایل‌های کاتلین
       const ktFiles = [
         'MyDeviceAdminReceiver.kt',
         'LockTaskModule.kt',
@@ -97,7 +82,6 @@ function withDeviceOwnerLock(config) {
         );
       }
 
-      // کپی فایل xml سیاست ادمین (بدون تغییر)
       fs.copyFileSync(
         path.join(srcDir, 'device_admin_receiver.xml'),
         path.join(xmlDir, 'device_admin_receiver.xml')
@@ -107,7 +91,6 @@ function withDeviceOwnerLock(config) {
     },
   ]);
 
-  // ۳) ثبت خودکار پکیج نیتیو در MainApplication (Kotlin)
   config = withDangerousMod(config, [
     'android',
     async (config) => {

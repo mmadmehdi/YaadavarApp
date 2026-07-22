@@ -178,6 +178,7 @@ export default function App() {
   }, [sentences]);
 
   function openPopup(sentence) {
+    if (Platform.OS === 'android' && LockTaskModule) { LockTaskModule.startLockTask().catch(() => {}); }
     setPalIdx(Math.floor(Math.random() * PALETTES.length));
     setPopupText(sentence);
     setSecsLeft(10);
@@ -212,6 +213,7 @@ export default function App() {
   }
 
   function closePopup() {
+    if (Platform.OS === 'android' && LockTaskModule) { LockTaskModule.stopLockTask().catch(() => {}); }
     if (secsLeft > 0) return; // جلوگیری از خروج قبل از اتمام ۱۰ ثانیه
     if (Platform.OS === 'android' && LockTaskModule) {
       LockTaskModule.stopLockTask().catch(() => {});
