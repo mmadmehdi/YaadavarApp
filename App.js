@@ -18,6 +18,7 @@ const STORAGE_KEY   = '@yaad_sentences';
 const INTERVAL_KEY  = '@yaad_interval';
 const NEXT_TIME_KEY = '@yaad_next_time';
 const ERROR_LOG_KEY = '@yaad_logs';
+const LOCK_SECONDS_KEY = '@yaad_lock_seconds';
 
 const INTERVALS = [
   { label: '۱ دقیقه',  value: 60   },
@@ -60,7 +61,7 @@ export default function App() {
   const [status, setStatus]           = useState('غیرفعال');
   const [nextTime, setNextTime]       = useState('');
   const [logs, setLogs]               = useState([]);
-  const [showSplash, setShowSplash]   = useState(true);
+  const [showSplash, setShowSplash]   = useState(false);
   const [splashText, setSplashText]   = useState('');
   const fadeAnim                      = useRef(new Animated.Value(0)).current;
   const scaleAnim                     = useRef(new Animated.Value(0.9)).current;
@@ -272,6 +273,8 @@ export default function App() {
       if (si) { const f = INTERVALS.find(i => i.value === parseInt(si)); if (f) setSelInterval(f); }
       const st = await AsyncStorage.getItem(NEXT_TIME_KEY);
       if (st) setNextTime(st);
+      const ls = await AsyncStorage.getItem(LOCK_SECONDS_KEY);
+      if (ls) setLockSeconds(parseInt(ls, 10));
       await refreshLogs();
     } catch(e) {}
   }
@@ -513,13 +516,14 @@ export default function App() {
             />
             <TouchableOpacity
               style={styles.customBtn}
-              onPress={() => {
+              onPress={async () => {
                 const secs = parseInt(lockSecondsInput, 10);
                 if (!secs || secs <= 0) {
                   Alert.alert('خطا', 'یه عدد صحیح و مثبت برای ثانیه وارد کن');
                   return;
                 }
                 setLockSeconds(secs);
+                await AsyncStorage.setItem(LOCK_SECONDS_KEY, String(secs));
                 Alert.alert('انجام شد', 'پاپ‌آپ از این به بعد ' + secs + ' ثانیه قفل می‌مونه');
               }}>
               <Text style={styles.customBtnText}>تنظیم</Text>
