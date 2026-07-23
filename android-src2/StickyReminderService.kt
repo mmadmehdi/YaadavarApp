@@ -69,7 +69,7 @@ class StickyReminderService : Service() {
             val manager = getSystemService(NotificationManager::class.java)
             if (manager.getNotificationChannel(CHANNEL_ID) == null) {
                 val channel = NotificationChannel(
-                    CHANNEL_ID, "یادآورهای فوری", NotificationManager.IMPORTANCE_HIGH
+                    CHANNEL_ID, "نوتیفیکیشن دائمی", NotificationManager.IMPORTANCE_LOW
                 )
                 manager.createNotificationChannel(channel)
             }
