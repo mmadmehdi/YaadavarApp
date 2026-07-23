@@ -103,7 +103,19 @@ export default function App() {
   }, [sentences]);
 
   function triggerRandomPopup() {
-    AsyncStorage.getItem(STORAGE_KEY).then((saved) => {
+    // اضافه شد: خوندن مستقیم و مطمئن مدت قفل هم‌زمان با جمله‌ها، تا با
+    // ریس‌کاندیشن بین لود اولیه و باز شدن پاپ‌آپ از دکمه پنل مشکلی پیش نیاد
+    Promise.all([
+      AsyncStorage.getItem(STORAGE_KEY),
+      AsyncStorage.getItem(LOCK_SECONDS_KEY),
+    ]).then(([saved, ls]) => {
+      if (ls) {
+        const parsedLs = parseInt(ls, 10);
+        if (parsedLs > 0) {
+          lockSecondsRef.current = parsedLs;
+          setLockSeconds(parsedLs);
+        }
+      }
       const list = saved ? JSON.parse(saved) : sentences;
       if (list && list.length > 0) {
         const r = list[Math.floor(Math.random() * list.length)];
