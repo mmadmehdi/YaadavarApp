@@ -71,10 +71,6 @@ export default function App() {
   const [palIdx, setPalIdx]           = useState(0);
   const popupFade                     = useRef(new Animated.Value(0)).current;
   const cdInterval                    = useRef(null);
-  const lockSecondsRef = useRef(10);
-  useEffect(() => {
-    lockSecondsRef.current = lockSeconds;
-  }, [lockSeconds]);
   const [secsLeft, setSecsLeft]       = useState(10);
 
   const STICKY_NOTIF_ID = 'sticky_reminder';
