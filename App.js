@@ -55,8 +55,8 @@ export default function App() {
   const [customMinutes, setCustomMinutes] = useState('');
   const [lockSeconds, setLockSeconds] = useState(10);
   const [lockSecondsInput, setLockSecondsInput] = useState('');
-  const [popupCustomMinutes, setPopupCustomMinutes] = useState('');
-  const [popupTimerActive, setPopupTimerActive] = useState(false);
+  const lockSecondsRef = useRef(10);
+  lockSecondsRef.current = lockSeconds;
   const [status, setStatus]           = useState('غیرفعال');
   const [nextTime, setNextTime]       = useState('');
   const [logs, setLogs]               = useState([]);
@@ -70,7 +70,6 @@ export default function App() {
   const [palIdx, setPalIdx]           = useState(0);
   const popupFade                     = useRef(new Animated.Value(0)).current;
   const cdInterval                    = useRef(null);
-  const popupTimerRef                 = useRef(null);
   const [secsLeft, setSecsLeft]       = useState(10);
 
   const STICKY_NOTIF_ID = 'sticky_reminder';
@@ -201,7 +200,7 @@ export default function App() {
     if (Platform.OS === 'android' && LockTaskModule) { LockTaskModule.startLockTask().catch(() => {}); }
     setPalIdx(Math.floor(Math.random() * PALETTES.length));
     setPopupText(sentence);
-    setSecsLeft(lockSeconds);
+    setSecsLeft(lockSecondsRef.current);
     popupFade.setValue(0);
     setShowPopup(true);
     Animated.spring(popupFade, { toValue: 1, friction: 7, useNativeDriver: true }).start();
@@ -526,48 +525,6 @@ export default function App() {
               <Text style={styles.customBtnText}>تنظیم</Text>
             </TouchableOpacity>
           </View>
-
-          <Text style={styles.label}>⏰ زمان‌بندی پاپ‌آپ (کاملاً مستقل از نوتیفیکیشن)</Text>
-          <View style={styles.customRow}>
-            <TextInput
-              style={styles.customInput}
-              keyboardType="numeric"
-              value={popupCustomMinutes}
-              onChangeText={setPopupCustomMinutes}
-              placeholder="هر چند دقیقه؟"
-              placeholderTextColor="#aaa"
-              textAlign="right"
-            />
-            <TouchableOpacity
-              style={styles.customBtn}
-              onPress={async () => {
-                const mins = parseInt(popupCustomMinutes, 10);
-                if (!mins || mins <= 0) {
-                  Alert.alert('خطا', 'یه عدد صحیح و مثبت برای دقیقه وارد کن');
-                  return;
-                }
-                if (popupTimerRef.current) clearInterval(popupTimerRef.current);
-                popupTimerRef.current = setInterval(() => { quickReminder(); }, mins * 60 * 1000);
-                setPopupTimerActive(true);
-                await addLog('زمان‌بندی مستقل پاپ‌آپ فعال شد: هر ' + mins + ' دقیقه');
-                await refreshLogs();
-                Alert.alert('انجام شد', 'پاپ‌آپ حالا هر ' + mins + ' دقیقه نمایش داده می‌شه (فقط وقتی اپ باز باشه)');
-              }}>
-              <Text style={styles.customBtnText}>تنظیم و شروع</Text>
-            </TouchableOpacity>
-          </View>
-          {popupTimerActive ? (
-            <TouchableOpacity style={styles.btnGray} onPress={async () => {
-              if (popupTimerRef.current) clearInterval(popupTimerRef.current);
-              popupTimerRef.current = null;
-              setPopupTimerActive(false);
-              await addLog('زمان‌بندی مستقل پاپ‌آپ متوقف شد');
-              await refreshLogs();
-            }}>
-              <Ionicons name="stop-circle" size={20} color="#fff" style={{ marginRight: 8 }} />
-              <Text style={styles.btnTxt}>توقف زمان‌بندی پاپ‌آپ مستقل</Text>
-            </TouchableOpacity>
-          ) : null}
 
           <TouchableOpacity style={styles.btnPurple} onPress={quickReminder}>
             <Ionicons name="git-compare" size={22} color="#fff" style={{ marginRight: 8 }} />
