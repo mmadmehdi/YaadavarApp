@@ -50,6 +50,7 @@ Notifications.setNotificationHandler({
 
 
 export default function App() {
+  const [keywordsText, setKeywordsText] = useState('');
   const [inputText, setInputText]     = useState('');
   const [sentences, setSentences]     = useState([]);
   const [isRunning, setIsRunning]     = useState(false);
