@@ -48,6 +48,7 @@ Notifications.setNotificationHandler({
   }),
 });
 
+
 export default function App() {
   const [inputText, setInputText]     = useState('');
   const [sentences, setSentences]     = useState([]);
