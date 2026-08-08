@@ -10,7 +10,7 @@ import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 
-const { LockTaskModule, StickyServiceModule } = NativeModules;
+const { LockTaskModule, StickyServiceModule, KeywordFilterModule } = NativeModules;
 
 const { width, height } = Dimensions.get('window');
 
@@ -541,6 +541,36 @@ export default function App() {
               <Text style={styles.customBtnText}>تنظیم</Text>
             </TouchableOpacity>
           </View>
+
+          <Text style={styles.label}>🔍 شناسایی کلمه در کل صفحه گوشی (نیاز به Accessibility)</Text>
+          <View style={styles.customRow}>
+            <TextInput
+              style={[styles.customInput, { flex: 2 }]}
+              value={keywordsText}
+              onChangeText={setKeywordsText}
+              placeholder="کلمه۱, کلمه۲, کلمه۳"
+              placeholderTextColor="#aaa"
+              textAlign="right"
+            />
+            <TouchableOpacity
+              style={styles.customBtn}
+              onPress={async () => {
+                if (Platform.OS !== 'android' || !KeywordFilterModule) return;
+                await KeywordFilterModule.saveKeywords(keywordsText);
+                Alert.alert('ذخیره شد', 'لیست کلمات کلیدی به‌روزرسانی شد');
+              }}>
+              <Text style={styles.customBtnText}>ذخیره</Text>
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity
+            style={styles.btnGray}
+            onPress={async () => {
+              if (Platform.OS !== 'android' || !KeywordFilterModule) return;
+              await KeywordFilterModule.openAccessibilitySettings();
+            }}>
+            <Ionicons name="accessibility" size={20} color="#fff" style={{ marginRight: 8 }} />
+            <Text style={styles.btnTxt}>فعال‌سازی دسترسی Accessibility</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity style={styles.btnPurple} onPress={quickReminder}>
             <Ionicons name="git-compare" size={22} color="#fff" style={{ marginRight: 8 }} />
