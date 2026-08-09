@@ -59,6 +59,7 @@ export default function App() {
   const [lockSeconds, setLockSeconds] = useState(10);
   const [lockSecondsInput, setLockSecondsInput] = useState('');
   const lockSecondsRef = useRef(10);
+  const showPopupRef = useRef(false);
   lockSecondsRef.current = lockSeconds;
   const [status, setStatus]           = useState('غیرفعال');
   const [nextTime, setNextTime]       = useState('');
@@ -120,6 +121,8 @@ export default function App() {
   }, [sentences]);
 
   function triggerRandomPopup() {
+    if (showPopupRef.current) return;
+
     // اضافه شد: خوندن مستقیم و مطمئن مدت قفل هم‌زمان با جمله‌ها، تا با
     // ریس‌کاندیشن بین لود اولیه و باز شدن پاپ‌آپ از دکمه پنل مشکلی پیش نیاد
     const kwPromise =
