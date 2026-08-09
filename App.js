@@ -51,6 +51,7 @@ Notifications.setNotificationHandler({
 
 export default function App() {
   const [keywordsText, setKeywordsText] = useState('');
+  const [savedKeywordsList, setSavedKeywordsList] = useState([]);
   const [inputText, setInputText]     = useState('');
   const [sentences, setSentences]     = useState([]);
   const [isRunning, setIsRunning]     = useState(false);
@@ -83,7 +84,10 @@ export default function App() {
     const loadKeywords = () => {
       if (Platform.OS === 'android' && KeywordFilterModule) {
         KeywordFilterModule.getKeywords()
-          .then((csv) => setKeywordsText(csv || ''))
+          .then((csv) => {
+            const list = (csv || '').split(',').map((k) => k.trim()).filter((k) => k.length > 0);
+            setSavedKeywordsList(list);
+          })
           .catch(() => {});
       }
     };
@@ -122,6 +126,7 @@ export default function App() {
 
   function triggerRandomPopup() {
     if (showPopupRef.current) return;
+    showPopupRef.current = true;
 
     // اضافه شد: خوندن مستقیم و مطمئن مدت قفل هم‌زمان با جمله‌ها، تا با
     // ریس‌کاندیشن بین لود اولیه و باز شدن پاپ‌آپ از دکمه پنل مشکلی پیش نیاد
@@ -585,11 +590,34 @@ export default function App() {
               style={styles.customBtn}
               onPress={async () => {
                 if (Platform.OS !== 'android' || !KeywordFilterModule) return;
-                await KeywordFilterModule.saveKeywords(keywordsText);
-                Alert.alert('ذخیره شد', 'لیست کلمات کلیدی به‌روزرسانی شد');
+                const newOnes = keywordsText
+                  .split(',')
+                  .map((k) => k.trim())
+                  .filter((k) => k.length > 0);
+                if (newOnes.length === 0) return;
+                const existing = savedKeywordsList.filter((k) => k.length > 0);
+                const merged = Array.from(new Set([...existing, ...newOnes]));
+                await KeywordFilterModule.saveKeywords(merged.join(','));
+                setSavedKeywordsList(merged);
+                setKeywordsText('');
               }}>
               <Text style={styles.customBtnText}>ذخیره</Text>
             </TouchableOpacity>
+          </View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+            {savedKeywordsList.map((kw) => (
+              <TouchableOpacity
+                key={kw}
+                style={styles.keywordChip}
+                onPress={async () => {
+                  if (Platform.OS !== 'android' || !KeywordFilterModule) return;
+                  const updated = savedKeywordsList.filter((k) => k !== kw);
+                  await KeywordFilterModule.saveKeywords(updated.join(','));
+                  setSavedKeywordsList(updated);
+                }}>
+                <Text style={styles.keywordChipText}>{kw} ✕</Text>
+              </TouchableOpacity>
+            ))}
           </View>
           <TouchableOpacity
             style={styles.btnGray}
@@ -688,6 +716,8 @@ const styles = StyleSheet.create({
   customInput: { flex: 1, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 20, padding: 12, fontSize: 15, color: '#0F172A' },
   customBtn: { backgroundColor: '#0EA5E9', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 12 },
   customBtnText: { color: '#fff', fontSize: 13, fontWeight: '700' },
+  keywordChip: { backgroundColor: '#334155', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6 },
+  keywordChipText: { color: '#fff', fontSize: 13 },
 
   btnPurple: { backgroundColor: '#8B5CF6', borderRadius: 40, paddingVertical: 14, alignItems: 'center', marginBottom: 12, flexDirection: 'row', justifyContent: 'center', gap: 8, shadowColor: '#8B5CF6', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.3, shadowRadius: 5, elevation: 4 },
   btnRed: { backgroundColor: '#EF4444', borderRadius: 40, paddingVertical: 14, alignItems: 'center', marginBottom: 12, flexDirection: 'row', justifyContent: 'center', gap: 8, shadowColor: '#EF4444', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.3, shadowRadius: 5, elevation: 4 },
