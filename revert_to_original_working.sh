@@ -1,3 +1,8 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -e
+[ -d "android-src3" ] || { echo "❌"; exit 1; }
+
+cat > android-src3/KeywordAccessibilityService.kt << 'KT_EOF'
 package __PACKAGE_NAME__
 
 import android.accessibilityservice.AccessibilityService
@@ -104,3 +109,9 @@ class KeywordAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {}
 }
+KT_EOF
+
+git add .
+git commit -m "revert: بازگشت کامل به نسخه اولیه سالم (فقط event.packageName)" || echo "چیزی برای کامیت نبود"
+git push
+echo "✅ تمام شد"
