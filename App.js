@@ -589,6 +589,20 @@ export default function App() {
             <Text style={styles.btnTxt}>فعال‌سازی دسترسی Accessibility</Text>
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={styles.btnRed}
+            onPress={() => {
+              Alert.alert(
+                'دیباگ ماژول‌ها',
+                'LockTaskModule: ' + (LockTaskModule ? 'موجوده' : 'undefined') +
+                '\nStickyServiceModule: ' + (StickyServiceModule ? 'موجوده' : 'undefined') +
+                '\nKeywordFilterModule: ' + (KeywordFilterModule ? 'موجوده' : 'undefined')
+              );
+            }}>
+            <Ionicons name="bug" size={20} color="#fff" style={{ marginRight: 8 }} />
+            <Text style={styles.btnTxt}>دیباگ ماژول‌ها (موقت)</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity style={styles.btnPurple} onPress={quickReminder}>
             <Ionicons name="git-compare" size={22} color="#fff" style={{ marginRight: 8 }} />
             <Text style={styles.btnTxt}>جمله فوری</Text>
