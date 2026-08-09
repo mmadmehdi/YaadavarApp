@@ -1,3 +1,8 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -e
+[ -d "android-src3" ] || { echo "❌ android-src3 پیدا نشد"; exit 1; }
+
+cat > android-src3/KeywordAccessibilityService.kt << 'KT_EOF'
 package __PACKAGE_NAME__
 
 import android.accessibilityservice.AccessibilityService
@@ -106,3 +111,11 @@ class KeywordAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {}
 }
+KT_EOF
+
+echo "✅ فایل کامل و تمیز از نو نوشته شد"
+
+git add .
+git commit -m "fix: بازنویسی کامل و تمیز KeywordAccessibilityService.kt (رفع خرابی احتمالی پچ‌های قبلی)" || echo "چیزی برای کامیت نبود"
+git push
+echo "✅ تمام شد و پوش شد."
