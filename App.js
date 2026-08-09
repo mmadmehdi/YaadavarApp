@@ -79,6 +79,21 @@ export default function App() {
   const appState = useRef(AppState.currentState);
 
   useEffect(() => {
+    const loadKeywords = () => {
+      if (Platform.OS === 'android' && KeywordFilterModule) {
+        KeywordFilterModule.getKeywords()
+          .then((csv) => setKeywordsText(csv || ''))
+          .catch(() => {});
+      }
+    };
+    loadKeywords();
+    const kwSub = AppState.addEventListener('change', (next) => {
+      if (next === 'active') loadKeywords();
+    });
+    return () => kwSub.remove();
+  }, []);
+
+  useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
       Animated.spring(scaleAnim, { toValue: 1, friction: 5, useNativeDriver: true })
