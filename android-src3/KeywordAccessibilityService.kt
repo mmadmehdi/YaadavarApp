@@ -38,9 +38,6 @@ class KeywordAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        // اضافه شد: خود اپ یادآور از اسکن استثنا بشه تا با متن‌های خودش قاطی نشه
-        if (event?.packageName != null && event.packageName == packageName) return
-
         val now = System.currentTimeMillis()
         if (now - lastScanAt < SCAN_MIN_INTERVAL_MS) return
         lastScanAt = now
@@ -58,6 +55,10 @@ class KeywordAccessibilityService : AccessibilityService() {
         if (keywords.isEmpty()) return
 
         val root = rootInActiveWindow ?: return
+
+        // اضافه شد: استثنا بر اساس پنجره‌ای که واقعاً داره اسکن می‌شه، نه منبع ایونت
+        if (root.packageName?.toString() == packageName) return
+
         try {
             if (containsKeyword(root, keywords)) {
                 lastTriggerAt = now
