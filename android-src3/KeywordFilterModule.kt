@@ -50,6 +50,19 @@ class KeywordFilterModule(reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
+    fun getAndClearLastMatchedKeyword(promise: Promise) {
+        try {
+            val kw = prefs().getString(KeywordAccessibilityService.LAST_MATCH_KEY, null)
+            if (kw != null) {
+                prefs().edit().remove(KeywordAccessibilityService.LAST_MATCH_KEY).apply()
+            }
+            promise.resolve(kw)
+        } catch (e: Exception) {
+            promise.reject("ERR_GET_LAST_MATCH", e)
+        }
+    }
+
+    @ReactMethod
     fun isAccessibilityServiceEnabled(promise: Promise) {
         try {
             val expectedComponent = reactApplicationContext.packageName + "/__PACKAGE_NAME__.KeywordAccessibilityService"

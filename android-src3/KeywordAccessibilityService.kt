@@ -16,6 +16,7 @@ class KeywordAccessibilityService : AccessibilityService() {
     companion object {
         const val PREFS_NAME = "yaadavar_keywords_prefs"
         const val PREFS_KEY = "keywords_csv"
+        const val LAST_MATCH_KEY = "last_matched_keyword"
         const val TRIGGER_COOLDOWN_MS = 8000L
         const val SCAN_MIN_INTERVAL_MS = 400L
         const val MAX_NODES = 800
@@ -38,7 +39,7 @@ class KeywordAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if (event?.packageName != null && event.packageName.toString() == packageName) return
+        if (event?.packageName != null && event.packageName == packageName) return
 
         val now = System.currentTimeMillis()
         if (now - lastScanAt < SCAN_MIN_INTERVAL_MS) return
@@ -57,11 +58,11 @@ class KeywordAccessibilityService : AccessibilityService() {
         if (keywords.isEmpty()) return
 
         val root = rootInActiveWindow ?: return
-        if (root.packageName != null && root.packageName.toString() == packageName) return
-
         try {
-            if (containsKeyword(root, keywords)) {
+            val matched = findMatchedKeyword(root, keywords)
+            if (matched != null) {
                 lastTriggerAt = now
+                prefs.edit().putString(LAST_MATCH_KEY, matched).apply()
                 openPopupScreen()
             }
         } catch (e: Exception) {
@@ -69,7 +70,7 @@ class KeywordAccessibilityService : AccessibilityService() {
         }
     }
 
-    private fun containsKeyword(root: AccessibilityNodeInfo, keywords: List<String>): Boolean {
+    private fun findMatchedKeyword(root: AccessibilityNodeInfo, keywords: List<String>): String? {
         val queue: ArrayDeque<AccessibilityNodeInfo> = ArrayDeque()
         queue.add(root)
         var visited = 0
@@ -85,7 +86,7 @@ class KeywordAccessibilityService : AccessibilityService() {
                 if ((text != null && text.contains(kw, ignoreCase = true)) ||
                     (desc != null && desc.contains(kw, ignoreCase = true))
                 ) {
-                    return true
+                    return kw
                 }
             }
 
@@ -94,7 +95,7 @@ class KeywordAccessibilityService : AccessibilityService() {
                 if (child != null) queue.add(child)
             }
         }
-        return false
+        return null
     }
 
     private fun openPopupScreen() {

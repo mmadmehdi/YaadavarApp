@@ -122,10 +122,16 @@ export default function App() {
   function triggerRandomPopup() {
     // اضافه شد: خوندن مستقیم و مطمئن مدت قفل هم‌زمان با جمله‌ها، تا با
     // ریس‌کاندیشن بین لود اولیه و باز شدن پاپ‌آپ از دکمه پنل مشکلی پیش نیاد
+    const kwPromise =
+      Platform.OS === 'android' && KeywordFilterModule
+        ? KeywordFilterModule.getAndClearLastMatchedKeyword().catch(() => null)
+        : Promise.resolve(null);
+
     Promise.all([
       AsyncStorage.getItem(STORAGE_KEY),
       AsyncStorage.getItem(LOCK_SECONDS_KEY),
-    ]).then(([saved, ls]) => {
+      kwPromise,
+    ]).then(([saved, ls, matchedKeyword]) => {
       if (ls) {
         const parsedLs = parseInt(ls, 10);
         if (parsedLs > 0) {
@@ -136,7 +142,10 @@ export default function App() {
       const list = saved ? JSON.parse(saved) : sentences;
       if (list && list.length > 0) {
         const r = list[Math.floor(Math.random() * list.length)];
-        openPopup(r);
+        const finalText = matchedKeyword
+          ? '🔍 کلمه شناسایی‌شده: ' + matchedKeyword + '\n\n' + r
+          : r;
+        openPopup(finalText);
         addLog('از دکمه بالای گوشی: ' + r.substring(0, 25) + '...');
         refreshLogs();
       }
