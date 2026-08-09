@@ -52,6 +52,7 @@ Notifications.setNotificationHandler({
 export default function App() {
   const [keywordsText, setKeywordsText] = useState('');
   const [savedKeywordsList, setSavedKeywordsList] = useState([]);
+  const [showKeywordsModal, setShowKeywordsModal] = useState(false);
   const [inputText, setInputText]     = useState('');
   const [sentences, setSentences]     = useState([]);
   const [isRunning, setIsRunning]     = useState(false);
@@ -604,21 +605,50 @@ export default function App() {
               <Text style={styles.customBtnText}>ذخیره</Text>
             </TouchableOpacity>
           </View>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-            {savedKeywordsList.map((kw) => (
-              <TouchableOpacity
-                key={kw}
-                style={styles.keywordChip}
-                onPress={async () => {
-                  if (Platform.OS !== 'android' || !KeywordFilterModule) return;
-                  const updated = savedKeywordsList.filter((k) => k !== kw);
-                  await KeywordFilterModule.saveKeywords(updated.join(','));
-                  setSavedKeywordsList(updated);
-                }}>
-                <Text style={styles.keywordChipText}>{kw} ✕</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <TouchableOpacity
+            style={styles.btnGray}
+            onPress={() => setShowKeywordsModal(true)}>
+            <Ionicons name="list" size={20} color="#fff" style={{ marginRight: 8 }} />
+            <Text style={styles.btnTxt}>لیست کلمات ({savedKeywordsList.length})</Text>
+          </TouchableOpacity>
+
+          <Modal
+            visible={showKeywordsModal}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setShowKeywordsModal(false)}>
+            <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', padding: 24 }}>
+              <View style={{ backgroundColor: '#1E293B', borderRadius: 20, padding: 20, maxHeight: '70%' }}>
+                <Text style={[styles.label, { textAlign: 'center', marginBottom: 12 }]}>لیست کلمات شناسایی</Text>
+                <ScrollView>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                    {savedKeywordsList.length === 0 ? (
+                      <Text style={{ color: '#94A3B8' }}>هنوز کلمه‌ای اضافه نکردی</Text>
+                    ) : (
+                      savedKeywordsList.map((kw) => (
+                        <TouchableOpacity
+                          key={kw}
+                          style={styles.keywordChip}
+                          onPress={async () => {
+                            if (Platform.OS !== 'android' || !KeywordFilterModule) return;
+                            const updated = savedKeywordsList.filter((k) => k !== kw);
+                            await KeywordFilterModule.saveKeywords(updated.join(','));
+                            setSavedKeywordsList(updated);
+                          }}>
+                          <Text style={styles.keywordChipText}>{kw} ✕</Text>
+                        </TouchableOpacity>
+                      ))
+                    )}
+                  </View>
+                </ScrollView>
+                <TouchableOpacity
+                  style={[styles.customBtn, { marginTop: 16, alignItems: 'center' }]}
+                  onPress={() => setShowKeywordsModal(false)}>
+                  <Text style={styles.customBtnText}>بستن</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
           <TouchableOpacity
             style={styles.btnGray}
             onPress={async () => {
