@@ -38,7 +38,7 @@ class KeywordAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if (event?.packageName != null && event.packageName == packageName) return
+        if (event?.packageName != null && event.packageName.toString() == packageName) return
 
         val now = System.currentTimeMillis()
         if (now - lastScanAt < SCAN_MIN_INTERVAL_MS) return
@@ -57,6 +57,8 @@ class KeywordAccessibilityService : AccessibilityService() {
         if (keywords.isEmpty()) return
 
         val root = rootInActiveWindow ?: return
+        if (root.packageName != null && root.packageName.toString() == packageName) return
+
         try {
             if (containsKeyword(root, keywords)) {
                 lastTriggerAt = now
