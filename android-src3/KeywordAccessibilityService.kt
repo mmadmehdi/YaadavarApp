@@ -99,7 +99,7 @@ class KeywordAccessibilityService : AccessibilityService() {
     }
 
     private fun openPopupScreen() {
-        val popupIntent = Intent(Intent.ACTION_VIEW, Uri.parse("__SCHEME__://popup"))
+        val popupIntent = Intent(Intent.ACTION_VIEW, Uri.parse("__SCHEME__://popup?ts=" + System.currentTimeMillis()))
         popupIntent.setPackage(packageName)
         popupIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         startActivity(popupIntent)
