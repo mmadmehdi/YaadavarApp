@@ -94,9 +94,33 @@ export default function App() {
           .catch(() => {});
       }
     };
+    const checkPendingMatch = () => {
+      if (Platform.OS === 'android' && KeywordFilterModule && !showPopupRef.current) {
+        KeywordFilterModule.getAndClearLastMatchedKeyword()
+          .then((kw) => {
+            if (kw) {
+              showPopupRef.current = true;
+              AsyncStorage.getItem(STORAGE_KEY).then((saved) => {
+                const list = saved ? JSON.parse(saved) : sentences;
+                if (list && list.length > 0) {
+                  const r = list[Math.floor(Math.random() * list.length)];
+                  openPopup('🔍 کلمه شناسایی‌شده: ' + kw + '\n\n' + r);
+                } else {
+                  showPopupRef.current = false;
+                }
+              });
+            }
+          })
+          .catch(() => {});
+      }
+    };
     loadKeywords();
+    checkPendingMatch();
     const kwSub = AppState.addEventListener('change', (next) => {
-      if (next === 'active') loadKeywords();
+      if (next === 'active') {
+        loadKeywords();
+        checkPendingMatch();
+      }
     });
     return () => kwSub.remove();
   }, []);
@@ -617,7 +641,7 @@ export default function App() {
           <TouchableOpacity
             style={styles.btnGray}
             onPress={() => {
-              setSentencesModalText(sentences.join(' | '));
+              setSentencesModalText('');
               setShowSentencesModal(true);
             }}>
             <Ionicons name="list" size={20} color="#fff" style={{ marginRight: 8 }} />
@@ -638,28 +662,41 @@ export default function App() {
                     color: '#fff',
                     borderRadius: 12,
                     padding: 12,
-                    minHeight: 220,
+                    minHeight: 80,
                     textAlign: 'right',
                     textAlignVertical: 'top',
                   }}
                   multiline
                   value={sentencesModalText}
                   onChangeText={setSentencesModalText}
-                  placeholder="جمله اول | جمله دوم | جمله سوم"
+                  placeholder="جمله جدید | جمله جدید دیگر"
                   placeholderTextColor="#64748B"
                 />
                 <TouchableOpacity
-                  style={[styles.customBtn, { marginTop: 16, alignItems: 'center' }]}
+                  style={[styles.customBtn, { marginTop: 12, alignItems: 'center' }]}
                   onPress={async () => {
-                    const list = sentencesModalText
+                    const newOnes = sentencesModalText
                       .split('|')
                       .map((s) => s.trim())
                       .filter((s) => s.length > 0);
-                    setSentences(list);
-                    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-                    setShowSentencesModal(false);
+                    if (newOnes.length === 0) return;
+                    const merged = [...sentences, ...newOnes];
+                    setSentences(merged);
+                    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+                    setSentencesModalText('');
                   }}>
                   <Text style={styles.customBtnText}>ذخیره</Text>
+                </TouchableOpacity>
+                <Text style={[styles.label, { marginTop: 16, marginBottom: 8, fontSize: 13 }]}>جملات فعلی:</Text>
+                <ScrollView style={{ maxHeight: 200 }}>
+                  <Text style={{ color: '#CBD5E1', textAlign: 'right', lineHeight: 22 }}>
+                    {sentences.join(' | ')}
+                  </Text>
+                </ScrollView>
+                <TouchableOpacity
+                  style={[styles.customBtn, { marginTop: 16, alignItems: 'center' }]}
+                  onPress={() => setShowSentencesModal(false)}>
+                  <Text style={styles.customBtnText}>بستن</Text>
                 </TouchableOpacity>
               </View>
             </View>
