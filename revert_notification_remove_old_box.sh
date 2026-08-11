@@ -1,3 +1,9 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -e
+[ -f "App.js" ] || { echo "❌"; exit 1; }
+
+if [ -d "android-src3" ]; then
+cat > android-src3/KeywordAccessibilityService.kt << 'KT_EOF'
 package __PACKAGE_NAME__
 
 import android.accessibilityservice.AccessibilityService
@@ -107,3 +113,66 @@ class KeywordAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {}
 }
+KT_EOF
+echo "✅ سرویس به حالت قبلی (startActivity مستقیم) برگشت"
+fi
+
+if [ -f "plugins/withKeywordAccessibility.js" ]; then
+  python3 << 'PYEOF'
+path = 'plugins/withKeywordAccessibility.js'
+content = open(path, 'r', encoding='utf-8').read()
+
+block = """    if (!androidManifest.manifest['uses-permission']) {
+      androidManifest.manifest['uses-permission'] = [];
+    }
+    const hasFsPerm = androidManifest.manifest['uses-permission'].some(
+      (p) => p.$['android:name'] === 'android.permission.USE_FULL_SCREEN_INTENT'
+    );
+    if (!hasFsPerm) {
+      androidManifest.manifest['uses-permission'].push({
+        $: { 'android:name': 'android.permission.USE_FULL_SCREEN_INTENT' },
+      });
+    }
+
+    const application = androidManifest.manifest.application[0];
+    if (!application.service) application.service = [];"""
+
+replacement = """    const application = androidManifest.manifest.application[0];
+    if (!application.service) application.service = [];"""
+
+if block in content:
+    content = content.replace(block, replacement, 1)
+    open(path, 'w', encoding='utf-8').write(content)
+    print("✅ مجوز FullScreenIntent حذف شد")
+else:
+    print("ℹ️  مجوز پیدا نشد (شاید قبلاً حذف شده)")
+PYEOF
+fi
+
+python3 << 'PYEOF'
+content = open('App.js', 'r', encoding='utf-8').read()
+
+idx = content.find('جملات خود را وارد کنید')
+if idx == -1:
+    print("⚠️ عبارت 'جملات خود را وارد کنید' اصلاً توی App.js پیدا نشد")
+else:
+    start = content.rfind('<Text', 0, idx)
+    end_marker_idx = content.find('فاصله زمانی', idx)
+    if end_marker_idx == -1:
+        print("⚠️ انکر پایانی 'فاصله زمانی' پیدا نشد")
+    else:
+        end = content.rfind('<Text', 0, end_marker_idx)
+        if start != -1 and end != -1 and end > start:
+            removed = content[start:end]
+            content = content[:start] + content[end:]
+            with open('App.js', 'w', encoding='utf-8') as f:
+                f.write(content)
+            print(f"✅ باکس قدیمی جملات حذف شد ({len(removed)} کاراکتر)")
+        else:
+            print("⚠️ محدوده حذف پیدا نشد")
+PYEOF
+
+git add .
+git commit -m "revert: بازگشت تشخیص کلمه به startActivity مستقیم + حذف قطعی باکس قدیمی جملات" || echo "چیزی برای کامیت نبود"
+git push
+echo "✅ تمام شد"
