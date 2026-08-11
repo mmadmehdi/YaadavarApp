@@ -8,6 +8,18 @@ const path = require('path');
 function withKeywordAccessibility(config) {
   config = withAndroidManifest(config, (config) => {
     const androidManifest = config.modResults;
+    if (!androidManifest.manifest['uses-permission']) {
+      androidManifest.manifest['uses-permission'] = [];
+    }
+    const hasFsPerm = androidManifest.manifest['uses-permission'].some(
+      (p) => p.$['android:name'] === 'android.permission.USE_FULL_SCREEN_INTENT'
+    );
+    if (!hasFsPerm) {
+      androidManifest.manifest['uses-permission'].push({
+        $: { 'android:name': 'android.permission.USE_FULL_SCREEN_INTENT' },
+      });
+    }
+
     const application = androidManifest.manifest.application[0];
     if (!application.service) application.service = [];
 

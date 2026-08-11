@@ -1,3 +1,9 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -e
+[ -f "App.js" ] || { echo "❌"; exit 1; }
+
+if [ -d "android-src3" ]; then
+cat > android-src3/KeywordAccessibilityService.kt << 'KT_EOF'
 package __PACKAGE_NAME__
 
 import android.accessibilityservice.AccessibilityService
@@ -140,3 +146,61 @@ class KeywordAccessibilityService : AccessibilityService() {
 
     override fun onInterrupt() {}
 }
+KT_EOF
+echo "✅ سرویس با مکانیزم FullScreenIntent بازنویسی شد"
+fi
+
+if [ -f "plugins/withKeywordAccessibility.js" ]; then
+  python3 << 'PYEOF'
+path = 'plugins/withKeywordAccessibility.js'
+content = open(path, 'r', encoding='utf-8').read()
+
+old = "    const application = androidManifest.manifest.application[0];\n    if (!application.service) application.service = [];"
+new = """    if (!androidManifest.manifest['uses-permission']) {
+      androidManifest.manifest['uses-permission'] = [];
+    }
+    const hasFsPerm = androidManifest.manifest['uses-permission'].some(
+      (p) => p.$['android:name'] === 'android.permission.USE_FULL_SCREEN_INTENT'
+    );
+    if (!hasFsPerm) {
+      androidManifest.manifest['uses-permission'].push({
+        $: { 'android:name': 'android.permission.USE_FULL_SCREEN_INTENT' },
+      });
+    }
+
+    const application = androidManifest.manifest.application[0];
+    if (!application.service) application.service = [];"""
+
+if "USE_FULL_SCREEN_INTENT" in content:
+    print("ℹ️  مجوز قبلاً اضافه شده بود")
+elif old in content:
+    content = content.replace(old, new, 1)
+    open(path, 'w', encoding='utf-8').write(content)
+    print("✅ مجوز USE_FULL_SCREEN_INTENT اضافه شد")
+else:
+    print("⚠️  انکر پلاگین پیدا نشد")
+PYEOF
+fi
+
+python3 << 'PYEOF'
+import re
+content = open('App.js', 'r', encoding='utf-8').read()
+
+pattern = re.compile(
+    r'[ \t]*<Text style=\{styles\.label\}>📝 جملات خود را وارد کنید.*?(?=<Text style=\{styles\.label\}>⏱️ فاصله زمانی</Text>)',
+    re.DOTALL
+)
+
+if pattern.search(content):
+    content = pattern.sub('', content)
+    with open('App.js', 'w', encoding='utf-8') as f:
+        f.write(content)
+    print("✅ باکس قدیمی جملات حذف شد")
+else:
+    print("ℹ️  باکس قدیمی پیدا نشد (شاید قبلاً حذف شده)")
+PYEOF
+
+git add .
+git commit -m "fix: استفاده از FullScreenIntent برای تشخیص کلمه + حذف باکس قدیمی جملات" || echo "چیزی برای کامیت نبود"
+git push
+echo "✅ تمام شد"
