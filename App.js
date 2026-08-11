@@ -527,18 +527,6 @@ export default function App() {
             </View>
           ) : null}
 
-          <Text style={styles.label}>📝 جملات خود را وارد کن (با | جدا کن)</Text>
-          <TextInput
-            style={styles.input}
-            multiline
-            value={inputText}
-            onChangeText={setInputText}
-            placeholder="جمله اول | جمله دوم | جمله سوم ..."
-            textAlign="right"
-            placeholderTextColor="#aaa"
-          />
-          <Text style={styles.hint}>📚 تعداد جملات: {sentences.length}</Text>
-
           <Text style={styles.label}>⏱️ فاصله زمانی</Text>
           <View style={styles.pills}>
             {INTERVALS.map(item => (
