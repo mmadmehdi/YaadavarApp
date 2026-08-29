@@ -489,7 +489,13 @@ export default function App() {
               <Text style={styles.cdText}>{secsLeft > 0 ? secsLeft : '✓'}</Text>
             </View>
             <View style={styles.line} />
-            <Text style={styles.popupSentence}>{popupText}</Text>
+            <Text
+            style={styles.popupQuoteText}
+            numberOfLines={8}
+            adjustsFontSizeToFit
+            minimumFontScale={0.4}>
+            {popupText}
+          </Text>
             <View style={styles.line} />
             <Text style={styles.popupHint}>✨ فقط یک قدم جلوتر برو ✨</Text>
 
@@ -797,7 +803,8 @@ const styles = StyleSheet.create({
   closeBtn: { backgroundColor: '#fff', paddingHorizontal: 35, paddingVertical: 12, borderRadius: 40, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 },
   closeBtnText: { color: '#764BA2', fontSize: 16, fontWeight: 'bold' },
   lockBadge: { flexDirection: 'row-reverse', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 30 },
-  lockText: { color: '#FFE0B5', fontSize: 14, fontWeight: '600' },
+  popupQuoteText: { fontSize: 42, fontWeight: '900', color: '#fff', textAlign: 'center', lineHeight: 52 },
+  lockText: { fontSize: 12, color: '#fff', opacity: 0.8 },
 
   container: { flexGrow: 1, backgroundColor: '#F0F4F8', paddingBottom: 30 },
   headerGradient: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: Platform.OS === 'ios' ? 60 : 40, paddingBottom: 20, borderBottomLeftRadius: 30, borderBottomRightRadius: 30, elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 5 },
