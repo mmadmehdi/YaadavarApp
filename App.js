@@ -504,7 +504,7 @@ export default function App() {
               <Text style={styles.cdText}>{secsLeft > 0 ? secsLeft : '✓'}</Text>
             </View>
             <View style={styles.line} />
-            <View style={{ flex: 1, justifyContent: 'center' }}>
+            <View style={{ minHeight: 260, justifyContent: 'center' }}>
             <Animated.Text
               style={[
                 styles.popupQuoteText,
