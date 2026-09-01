@@ -65,6 +65,7 @@ export default function App() {
   const lockSecondsRef = useRef(10);
   const showPopupRef = useRef(false);
   const blinkAnim = useRef(new Animated.Value(0)).current;
+  const blinkLoopRef = useRef(null);
   lockSecondsRef.current = lockSeconds;
   const [status, setStatus]           = useState('غیرفعال');
   const [nextTime, setNextTime]       = useState('');
@@ -272,6 +273,16 @@ export default function App() {
   }, [sentences]);
 
   function openPopup(sentence) {
+    showPopupRef.current = true;
+    if (blinkLoopRef.current) { blinkLoopRef.current.stop(); }
+    blinkAnim.setValue(0);
+    blinkLoopRef.current = Animated.loop(
+      Animated.sequence([
+        Animated.timing(blinkAnim, { toValue: 1, duration: 450, useNativeDriver: false }),
+        Animated.timing(blinkAnim, { toValue: 0, duration: 450, useNativeDriver: false }),
+      ])
+    );
+    blinkLoopRef.current.start();
     if (Platform.OS === 'android' && LockTaskModule) { LockTaskModule.startLockTask().catch(() => {}); }
     setPalIdx(Math.floor(Math.random() * PALETTES.length));
     setPopupText(sentence);
@@ -307,6 +318,9 @@ export default function App() {
   }
 
   function closePopup() {
+    showPopupRef.current = false;
+    if (blinkLoopRef.current) { blinkLoopRef.current.stop(); blinkLoopRef.current = null; }
+    blinkAnim.setValue(0);
     if (Platform.OS === 'android' && LockTaskModule) { LockTaskModule.stopLockTask().catch(() => {}); }
     if (secsLeft > 0) return; // جلوگیری از خروج قبل از اتمام ۱۰ ثانیه
     if (Platform.OS === 'android' && LockTaskModule) {
