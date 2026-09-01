@@ -64,6 +64,7 @@ export default function App() {
   const [lockSecondsInput, setLockSecondsInput] = useState('');
   const lockSecondsRef = useRef(10);
   const showPopupRef = useRef(false);
+  const blinkAnim = useRef(new Animated.Value(0)).current;
   lockSecondsRef.current = lockSeconds;
   const [status, setStatus]           = useState('غیرفعال');
   const [nextTime, setNextTime]       = useState('');
@@ -489,13 +490,23 @@ export default function App() {
               <Text style={styles.cdText}>{secsLeft > 0 ? secsLeft : '✓'}</Text>
             </View>
             <View style={styles.line} />
-            <Text
-            style={styles.popupQuoteText}
-            numberOfLines={8}
-            adjustsFontSizeToFit
-            minimumFontScale={0.4}>
-            {popupText}
-          </Text>
+            <View style={{ flex: 1, justifyContent: 'center' }}>
+            <Animated.Text
+              style={[
+                styles.popupQuoteText,
+                {
+                  color: blinkAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['#FFFFFF', '#FF1744'],
+                  }),
+                },
+              ]}
+              numberOfLines={10}
+              adjustsFontSizeToFit
+              minimumFontScale={0.3}>
+              {popupText}
+            </Animated.Text>
+          </View>
             <View style={styles.line} />
             <Text style={styles.popupHint}>✨ فقط یک قدم جلوتر برو ✨</Text>
 
@@ -803,7 +814,7 @@ const styles = StyleSheet.create({
   closeBtn: { backgroundColor: '#fff', paddingHorizontal: 35, paddingVertical: 12, borderRadius: 40, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 },
   closeBtnText: { color: '#764BA2', fontSize: 16, fontWeight: 'bold' },
   lockBadge: { flexDirection: 'row-reverse', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 30 },
-  popupQuoteText: { fontSize: 42, fontWeight: '900', color: '#fff', textAlign: 'center', lineHeight: 52 },
+  popupQuoteText: { fontSize: 72, fontWeight: '900', textAlign: 'center', lineHeight: 84 },
   lockText: { fontSize: 12, color: '#fff', opacity: 0.8 },
 
   container: { flexGrow: 1, backgroundColor: '#F0F4F8', paddingBottom: 30 },
