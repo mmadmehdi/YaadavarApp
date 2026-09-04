@@ -505,6 +505,11 @@ export default function App() {
             </View>
             <View style={styles.line} />
             <View style={{ minHeight: 260, justifyContent: 'center' }}>
+            {popupText.startsWith('🔍') && (
+              <Text style={{ fontSize: 14, color: '#fff', textAlign: 'center', marginBottom: 12, opacity: 0.85 }}>
+                {popupText.split('\n\n')[0]}
+              </Text>
+            )}
             <Animated.Text
               style={[
                 styles.popupQuoteText,
@@ -518,7 +523,7 @@ export default function App() {
               numberOfLines={10}
               adjustsFontSizeToFit
               minimumFontScale={0.3}>
-              {popupText}
+              {popupText.startsWith('🔍') ? popupText.split('\n\n').slice(1).join('\n\n') : popupText}
             </Animated.Text>
           </View>
             <View style={styles.line} />
